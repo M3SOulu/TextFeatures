@@ -50,3 +50,11 @@ sentiment analysis.
 
 <!-- ## Paper and Citation -->
 <!-- If you use our tool please cite our paper: -->
+
+## Acknowledgement
+
+This package reuses ideas
+from [Senti4SD](https://github.com/collab-uniba/Senti4SD) and the
+following paper: Calefato F., Lanubile F., Maiorano F., Novielli N.,
+"Sentiment Polarity Detection for Software Development", Empirical
+Software Engineering, Volume 23 Issue 3, June 2018, Pages 1352-1382.
