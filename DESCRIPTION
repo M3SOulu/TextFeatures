@@ -1,6 +1,6 @@
 Package: TextFeatures
 Title: Text Features for NLP
-Version: 0.1
+Version: 0.1.0
 Authors@R:
     person(given = "Maëlick",
            family = "Claes",
