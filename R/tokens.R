@@ -10,10 +10,10 @@
 #'   token stored in word.orig column.
 #' @export
 CleanNLPTokens <- function(text, ids=1:length(text)) {
-  ann <- cnlp_annotate(text, doc_ids=ids, backend="corenlp")
-  tokens <- as.data.table(cnlp_get_token(ann, include_root=FALSE))
-  tokens[, word.orig := word]
-  tokens[, word := tolower(word)]
+  names(text) <- ids
+  ann <- cnlp_annotate(text, backend="corenlp")
+  tokens <- as.data.table(ann$token)
+  tokens[, word := tolower(token)]
   tokens
 }
 

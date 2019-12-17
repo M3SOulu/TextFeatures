@@ -11,9 +11,9 @@
 KeywordBasedFeatures <- function(tokens, negations) {
   ids <- sort(unique(tokens$id))
 
-  res <- tokens[, list(uppercase.words=sum(IsUppercaseWord(word.orig)),
-                       uppercase.words.unique=sum(IsUppercaseWord(word.orig) &
-                                                  !duplicated(word.orig)),
+  res <- tokens[, list(uppercase.words=sum(IsUppercaseWord(token)),
+                       uppercase.words.unique=sum(IsUppercaseWord(token) &
+                                                  !duplicated(token)),
                        repeated.marks=sum(IsRepeatedMarks(word)),
                        laughter=sum(IsLaughter(word)),
                        elongated=sum(IsElongated(word)),
@@ -39,7 +39,7 @@ KeywordBasedFeatures <- function(tokens, negations) {
 ## }
 
 ## CountUppercaseWords <- function(tokens, col.name=NULL) {
-##   res <- tokens[, list(N=sum(IsUppercaseWord(word.orig))), by=id]
+##   res <- tokens[, list(N=sum(IsUppercaseWord(token))), by=id]
 ##   RenameColumn(res, col.name)
 ## }
 

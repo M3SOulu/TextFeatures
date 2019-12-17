@@ -10,8 +10,9 @@
 #'   features.
 #' @export
 Senti4SDFeatures <- function(text, label=1:length(text), datadir) {
-  cleanNLP::cnlp_init_corenlp("en", 0)
+  cleanNLP::cnlp_init_corenlp("en", config=list(processors="tokenize"))
   tokens <- CleanNLPTokens(text, label)
+  setnames(tokens, "doc_id", "id")
 
   lexicons <- ReadLexicons(datadir, FALSE)
   negations <- fread(file.path(datadir, "NegatingWordList"), header=FALSE)$V1
