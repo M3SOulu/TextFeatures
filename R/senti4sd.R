@@ -63,7 +63,7 @@ LoadDSMSenti4SD <- function(senti4sd.path=senti4sd.path.default()) {
 #' @param dimension Vector dimension to use.
 #' @return PolarityVector Java object.
 #' @seealso LoadDSMSenti4SD
-Senti4SDPolarityVector <- function(vector.reader, dimension=600) {
+Senti4SDPolarityVector <- function(vector.reader, dimension=600L) {
   rJava::new(rJava::J("feature/semantic/PolarityVector"),
              vector.reader, dimension)
 }
@@ -156,8 +156,6 @@ Senti4SDStringRepresentation <- function(string) {
 #' @export
 Senti4SDSemanticBasedFeatures <- function(tokens,
                                           vectors=Senti4SDPolarityVectors()) {
-  ids <- sort(unique(tokens$id))
-
   res <- tokens[, {
     v <- Senti4SDStringRepresentation(word)
     list(sim.pos=v$measureOverlap(vectors$positive),
@@ -165,6 +163,5 @@ Senti4SDSemanticBasedFeatures <- function(tokens,
          sim.obj=v$measureOverlap(vectors$objective),
          sim.subj=v$measureOverlap(vectors$subjective))
   }, by=id]
-  res <- setkey(res, id)[ids]
-  res
+  setkey(res, id)
 }
