@@ -17,19 +17,15 @@ Senti4SDFeatures <- function(text, label=1:length(text), datadir) {
   negations <- fread(file.path(datadir, "NegatingWordList"), header=FALSE)$V1
 
   logging::loginfo("Loading DSM")
-  dsm <- LoadDSM(file.path(datadir, "dsm.bin"))
-  gc()
-  vectors <- with(lexicons, PolarityVectors(positive$word, negative$word,
-                                            objective$word, dsm))
+  InitSenti4SD(datadir)
   logging::loginfo("Computing Senti4SD semantic features")
-  semantic <- SemanticBasedFeatures(tokens, vectors, dsm)
-  rm(dsm)
+  semantic <- Senti4SDSemanticBasedFeatures(tokens)[label]
   gc()
 
   logging::loginfo("Computing Senti4SD lexicon-based features")
-  lexicon <- LexiconBasedFeatures(tokens, lexicons)
+  lexicon <- LexiconBasedFeatures(tokens, lexicons)[label]
   logging::loginfo("Computing Senti4SD keyword-based features")
-  keyword <- KeywordBasedFeatures(tokens, negations)
+  keyword <- KeywordBasedFeatures(tokens, negations)[label]
   features <- list(lexicon=lexicon, keyword=keyword, semantic=semantic)
   features <- lapply(features, function(f) as.matrix(f[, -1, with=FALSE],
                                                      rownames=label))
