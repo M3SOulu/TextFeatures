@@ -35,7 +35,7 @@ DownloadSenti4SDData <- function(senti4sd.path=senti4sd.path.default(),
 #' @seealso DownloadSenti4SDData
 InitJVM <- function(senti4sd.path=senti4sd.path.default(), heap.size="2048m") {
   logging::loginfo("Initializing JVM with %s heap size.", heap.size)
-  rJava::.jinit(file.path(senti4sd.path, "Senti4SD-fast.jar"),
+  rJava::.jinit(file.path(path.expand(senti4sd.path), "Senti4SD-fast.jar"),
                 parameters=sprintf("-Xmx%s", heap.size))
 }
 
