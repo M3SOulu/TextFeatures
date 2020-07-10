@@ -10,6 +10,7 @@
 #'   features.
 #' @export
 Senti4SDFeatures <- function(text, label=1:length(text), datadir) {
+  label <- as.character(label)
   cleanNLP::cnlp_init_corenlp("en", config=list(processors="tokenize"))
   tokens <- CleanNLPTokens(text, label)
   setnames(tokens, "doc_id", "id")
