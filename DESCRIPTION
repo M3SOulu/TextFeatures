@@ -9,8 +9,8 @@ Authors@R:
 Description: This package includes functions to compute text features
   to be used for NLP and sentiment analysis with machine learning.
 Depends: R (>= 3.0), data.table
-Imports: cleanNLP (>= 3.0.0), text2vec, logging, wordVectors
-Suggests: rJava
+Imports: cleanNLP (>= 3.0.0), text2vec, logging
+Suggests: rJava, wordVectors
 Remotes: bmschmidt/wordVectors
 License: GPL-3
 Encoding: UTF-8

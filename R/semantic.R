@@ -13,18 +13,22 @@
 #' @seealso PolarityVectors
 #' @export
 SemanticBasedFeatures <- function(tokens, vectors, dsm) {
-  ids <- sort(unique(tokens$id))
-  res <- dsm[[tokens$word, average=FALSE]]
-  res <- cbind(as.data.table(matrix(res, nrow=nrow(res))), word=rownames(res))
-  res <- merge(tokens[, list(id, word)], res, by="word")
-  res$word <- NULL
-  res <- as.matrix(res[, as.list(colSums(.SD)), by=id], rownames="id")
-  colnames(res) <- paste("sim", colnames(res), sep=".")
-  res <- cbind(id=rownames(res),
-               as.data.table(wordVectors::cosineSimilarity(res, vectors)))
-  res <- setkey(res, id)[ids]
-  res[is.na(res)] <- 0
-  setkey(res, id)
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    ids <- sort(unique(tokens$id))
+    res <- dsm[[tokens$word, average=FALSE]]
+    res <- cbind(as.data.table(matrix(res, nrow=nrow(res))), word=rownames(res))
+    res <- merge(tokens[, list(id, word)], res, by="word")
+    res$word <- NULL
+    res <- as.matrix(res[, as.list(colSums(.SD)), by=id], rownames="id")
+    colnames(res) <- paste("sim", colnames(res), sep=".")
+    res <- cbind(id=rownames(res),
+                 as.data.table(wordVectors::cosineSimilarity(res, vectors)))
+    res <- setkey(res, id)[ids]
+    res[is.na(res)] <- 0
+    setkey(res, id)
+  } else {
+    stop("wordVectors must be installed to use semantic-based features")
+  }
 }
 
 #' Load DSM
@@ -35,7 +39,11 @@ SemanticBasedFeatures <- function(tokens, vectors, dsm) {
 #' @return VectorSpaceModel object.
 #' @export
 LoadDSM <- function(filename) {
-  wordVectors::read.binary.vectors(filename)
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    wordVectors::read.binary.vectors(filename)
+  } else {
+    stop("wordVectors must be installed to use semantic-based features")
+  }
 }
 
 #' Polarity Vectors
