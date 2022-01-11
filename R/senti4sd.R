@@ -13,7 +13,7 @@ senti4sd.path.default <- function() {
 #'   already exists.
 DownloadSenti4SDData <- function(senti4sd.path=senti4sd.path.default(),
                                  update=FALSE) {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     logging::loginfo("Downloading Senti4SD data in %s", senti4sd.path)
     url <- "blob/master/ClassificationTask/Senti4SD-fast.jar?raw=true"
     filename <- file.path(senti4sd.path, "Senti4SD-fast.jar")
@@ -38,7 +38,7 @@ DownloadSenti4SDData <- function(senti4sd.path=senti4sd.path.default(),
 #' @param heap.size Maximum heap size for Java.
 #' @seealso DownloadSenti4SDData
 InitJVM <- function(senti4sd.path=senti4sd.path.default(), heap.size="2048m") {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     logging::loginfo("Initializing JVM with %s heap size.", heap.size)
     rJava::.jinit(file.path(path.expand(senti4sd.path), "Senti4SD-fast.jar"),
                   parameters=sprintf("-Xmx%s", heap.size))
@@ -55,7 +55,7 @@ InitJVM <- function(senti4sd.path=senti4sd.path.default(), heap.size="2048m") {
 #' @return VectorReader Java object resulting from loading the DSM.
 #' @seealso DownloadSenti4SDData
 LoadDSMSenti4SD <- function(senti4sd.path=senti4sd.path.default()) {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     logging::loginfo("Loading Senti4SD DSM.")
     vector.reader <- rJava::new(rJava::J("di/uniba/it/tdsm/vectors/MemoryVectorReader"),
                                 rJava::new(rJava::J("java/io/File"),
@@ -76,7 +76,7 @@ LoadDSMSenti4SD <- function(senti4sd.path=senti4sd.path.default()) {
 #' @return PolarityVector Java object.
 #' @seealso LoadDSMSenti4SD
 Senti4SDPolarityVector <- function(vector.reader, dimension=600L) {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     rJava::new(rJava::J("feature/semantic/PolarityVector"),
                vector.reader, dimension)
   } else {
@@ -110,7 +110,7 @@ senti4sd.env <- new.env(parent=emptyenv())
 #' @export
 InitSenti4SD <- function(senti4sd.path=senti4sd.path.default(),
                          heap.size="2048m", update=FALSE) {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     DownloadSenti4SDData(senti4sd.path, update)
     InitJVM(senti4sd.path, heap.size)
     senti4sd.env$vector.reader <- LoadDSMSenti4SD(senti4sd.path)
@@ -129,7 +129,7 @@ InitSenti4SD <- function(senti4sd.path=senti4sd.path.default(),
 #'   vector.
 #' @export
 Senti4SDPolarityVectors <- function() {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     list(positive=senti4sd.env$polarity.vector$getPositiveVector(),
          negative=senti4sd.env$polarity.vector$getNegativeVector(),
          subjective=senti4sd.env$polarity.vector$getSubjectiveVector(),
@@ -148,7 +148,7 @@ Senti4SDPolarityVectors <- function() {
 #' @return Vector as an R object.
 #' @export
 Senti4SDGetVector <- function(vector) {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     rJava::.jcall(vector, "[F", "getCoordinates")
   } else {
     stop("rJava must be installed to use Senti4SD semantic-based features")
@@ -164,7 +164,7 @@ Senti4SDGetVector <- function(vector) {
 #' @seealso Senti4SDGetVector
 #' @export
 Senti4SDStringRepresentation <- function(string) {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     string <- paste(string, collapse=" ")
     senti4sd.env$polarity.vector$stringRepresentation(string)
     ## rJava::.jcall(senti4sd.env$polarity.vector,
@@ -189,7 +189,7 @@ Senti4SDStringRepresentation <- function(string) {
 #' @export
 Senti4SDSemanticBasedFeatures <- function(tokens,
                                           vectors=Senti4SDPolarityVectors()) {
-  if(requireNamespace("data.table", quietly=TRUE)) {
+  if(requireNamespace("rJava", quietly=TRUE)) {
     res <- tokens[, {
       v <- Senti4SDStringRepresentation(word)
       list(sim.pos=v$measureOverlap(vectors$positive),
