@@ -13,16 +13,20 @@ senti4sd.path.default <- function() {
 #'   already exists.
 DownloadSenti4SDData <- function(senti4sd.path=senti4sd.path.default(),
                                  update=FALSE) {
-  logging::loginfo("Downloading Senti4SD data in %s", senti4sd.path)
-  url <- "blob/master/ClassificationTask/Senti4SD-fast.jar?raw=true"
-  filename <- file.path(senti4sd.path, "Senti4SD-fast.jar")
-  if (update || !file.exists(filename)) {
-    download.file(file.path(senti4sd.repo, url), filename)
-  }
-  url <- "blob/master/ClassificationTask/dsm.bin?raw=true"
-  filename <- file.path(senti4sd.path, "dsm.bin")
-  if (update || !file.exists(filename)) {
-    download.file(file.path(senti4sd.repo, url), filename)
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    logging::loginfo("Downloading Senti4SD data in %s", senti4sd.path)
+    url <- "blob/master/ClassificationTask/Senti4SD-fast.jar?raw=true"
+    filename <- file.path(senti4sd.path, "Senti4SD-fast.jar")
+    if (update || !file.exists(filename)) {
+      download.file(file.path(senti4sd.repo, url), filename)
+    }
+    url <- "blob/master/ClassificationTask/dsm.bin?raw=true"
+    filename <- file.path(senti4sd.path, "dsm.bin")
+    if (update || !file.exists(filename)) {
+      download.file(file.path(senti4sd.repo, url), filename)
+    }
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
   }
 }
 
@@ -34,9 +38,13 @@ DownloadSenti4SDData <- function(senti4sd.path=senti4sd.path.default(),
 #' @param heap.size Maximum heap size for Java.
 #' @seealso DownloadSenti4SDData
 InitJVM <- function(senti4sd.path=senti4sd.path.default(), heap.size="2048m") {
-  logging::loginfo("Initializing JVM with %s heap size.", heap.size)
-  rJava::.jinit(file.path(path.expand(senti4sd.path), "Senti4SD-fast.jar"),
-                parameters=sprintf("-Xmx%s", heap.size))
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    logging::loginfo("Initializing JVM with %s heap size.", heap.size)
+    rJava::.jinit(file.path(path.expand(senti4sd.path), "Senti4SD-fast.jar"),
+                  parameters=sprintf("-Xmx%s", heap.size))
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
+  }
 }
 
 #' Load Senti4SD DSM
@@ -47,12 +55,16 @@ InitJVM <- function(senti4sd.path=senti4sd.path.default(), heap.size="2048m") {
 #' @return VectorReader Java object resulting from loading the DSM.
 #' @seealso DownloadSenti4SDData
 LoadDSMSenti4SD <- function(senti4sd.path=senti4sd.path.default()) {
-  logging::loginfo("Loading Senti4SD DSM.")
-  vector.reader <- rJava::new(rJava::J("di/uniba/it/tdsm/vectors/MemoryVectorReader"),
-                              rJava::new(rJava::J("java/io/File"),
-                                         file.path(senti4sd.path, "dsm.bin")))
-  vector.reader$init()
-  vector.reader
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    logging::loginfo("Loading Senti4SD DSM.")
+    vector.reader <- rJava::new(rJava::J("di/uniba/it/tdsm/vectors/MemoryVectorReader"),
+                                rJava::new(rJava::J("java/io/File"),
+                                           file.path(senti4sd.path, "dsm.bin")))
+    vector.reader$init()
+    vector.reader
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
+  }
 }
 
 #' Senti4SD Polarity Vector
@@ -64,8 +76,12 @@ LoadDSMSenti4SD <- function(senti4sd.path=senti4sd.path.default()) {
 #' @return PolarityVector Java object.
 #' @seealso LoadDSMSenti4SD
 Senti4SDPolarityVector <- function(vector.reader, dimension=600L) {
-  rJava::new(rJava::J("feature/semantic/PolarityVector"),
-             vector.reader, dimension)
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    rJava::new(rJava::J("feature/semantic/PolarityVector"),
+               vector.reader, dimension)
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
+  }
 }
 
 #' Senti4SD environment
@@ -94,10 +110,14 @@ senti4sd.env <- new.env(parent=emptyenv())
 #' @export
 InitSenti4SD <- function(senti4sd.path=senti4sd.path.default(),
                          heap.size="2048m", update=FALSE) {
-  DownloadSenti4SDData(senti4sd.path, update)
-  InitJVM(senti4sd.path, heap.size)
-  senti4sd.env$vector.reader <- LoadDSMSenti4SD(senti4sd.path)
-  senti4sd.env$polarity.vector <- Senti4SDPolarityVector(senti4sd.env$vector.reader, 600L)
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    DownloadSenti4SDData(senti4sd.path, update)
+    InitJVM(senti4sd.path, heap.size)
+    senti4sd.env$vector.reader <- LoadDSMSenti4SD(senti4sd.path)
+    senti4sd.env$polarity.vector <- Senti4SDPolarityVector(senti4sd.env$vector.reader, 600L)
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
+  }
 }
 
 #' Senti4SD Polarity Vectors
@@ -109,10 +129,15 @@ InitSenti4SD <- function(senti4sd.path=senti4sd.path.default(),
 #'   vector.
 #' @export
 Senti4SDPolarityVectors <- function() {
-  list(positive=senti4sd.env$polarity.vector$getPositiveVector(),
-       negative=senti4sd.env$polarity.vector$getNegativeVector(),
-       subjective=senti4sd.env$polarity.vector$getSubjectiveVector(),
-       objective=senti4sd.env$polarity.vector$getObjectiveVector())
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    list(positive=senti4sd.env$polarity.vector$getPositiveVector(),
+         negative=senti4sd.env$polarity.vector$getNegativeVector(),
+         subjective=senti4sd.env$polarity.vector$getSubjectiveVector(),
+         objective=senti4sd.env$polarity.vector$getObjectiveVector())
+  } else {
+    warning("rJava must be installed to use Senti4SD semantic-based features")
+    NULL
+  }
 }
 
 #' Senti4SD Get Vector
@@ -123,7 +148,11 @@ Senti4SDPolarityVectors <- function() {
 #' @return Vector as an R object.
 #' @export
 Senti4SDGetVector <- function(vector) {
-  rJava::.jcall(vector, "[F", "getCoordinates")
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    rJava::.jcall(vector, "[F", "getCoordinates")
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
+  }
 }
 
 #' Senti4SD String Representation
@@ -135,11 +164,15 @@ Senti4SDGetVector <- function(vector) {
 #' @seealso Senti4SDGetVector
 #' @export
 Senti4SDStringRepresentation <- function(string) {
-  string <- paste(string, collapse=" ")
-  senti4sd.env$polarity.vector$stringRepresentation(string)
-  ## rJava::.jcall(senti4sd.env$polarity.vector,
-  ##               "Ldi/uniba/it/tdsm/vectors/Vector",
-  ##               "stringRepresentation", string)
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    string <- paste(string, collapse=" ")
+    senti4sd.env$polarity.vector$stringRepresentation(string)
+    ## rJava::.jcall(senti4sd.env$polarity.vector,
+    ##               "Ldi/uniba/it/tdsm/vectors/Vector",
+    ##               "stringRepresentation", string)
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
+  }
 }
 
 #' Senti4SD Semantic based features
@@ -156,12 +189,16 @@ Senti4SDStringRepresentation <- function(string) {
 #' @export
 Senti4SDSemanticBasedFeatures <- function(tokens,
                                           vectors=Senti4SDPolarityVectors()) {
-  res <- tokens[, {
-    v <- Senti4SDStringRepresentation(word)
-    list(sim.pos=v$measureOverlap(vectors$positive),
-         sim.neg=v$measureOverlap(vectors$negative),
-         sim.obj=v$measureOverlap(vectors$objective),
-         sim.subj=v$measureOverlap(vectors$subjective))
-  }, by=id]
-  setkey(res, id)
+  if(requireNamespace("data.table", quietly=TRUE)) {
+    res <- tokens[, {
+      v <- Senti4SDStringRepresentation(word)
+      list(sim.pos=v$measureOverlap(vectors$positive),
+           sim.neg=v$measureOverlap(vectors$negative),
+           sim.obj=v$measureOverlap(vectors$objective),
+           sim.subj=v$measureOverlap(vectors$subjective))
+    }, by=id]
+    setkey(res, id)
+  } else {
+    stop("rJava must be installed to use Senti4SD semantic-based features")
+  }
 }
