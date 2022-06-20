@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/M3SOulu/TextFeatures.svg?branch=master)](https://travis-ci.org/M3SOulu/TextFeatures)
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/M3SOulu/TextFeatures/workflows/R-CMD-check/badge.svg)](https://github.com/M3SOulu/TextFeatures/actions)
+<!-- badges: end -->
 
 # TextFeatures
 
